@@ -87,6 +87,7 @@ registry.category("web_tour.tours").add("PosRefundDownpayment", {
             ProductScreen.clickPayButton(),
             PaymentScreen.clickPaymentMethod("Cash"),
             PaymentScreen.clickValidate(),
+            ReceiptScreen.checkDownpaymentProducts('1xproduct_a'),
             ReceiptScreen.clickNextOrder(),
             ProductScreen.clickRefund(),
             // Filter should be automatically 'Paid'.
@@ -201,3 +202,88 @@ registry
             ProductScreen.controlButton("Save"),
         ].flat(),
     });
+
+registry
+    .category("web_tour.tours")
+    .add('PoSSaleOrderWithDownpayment', {
+        test: true,
+        steps: () => [
+            Dialog.confirm("Open session"),
+            ProductScreen.controlButton("Quotation/Order"),
+            ProductScreen.selectFirstOrder(),
+            ProductScreen.selectedOrderlineHas('Down Payment (POS)', '1.00', '20.00'),
+            ProductScreen.totalAmountIs(980.0)
+        ].flat(),
+    });
+
+registry
+    .category("web_tour.tours")
+    .add('PosOrderDoesNotRemainInList', {
+        test: true,
+        url: '/pos/ui',
+        steps: () => [
+            Dialog.confirm("Open session"),
+            ProductScreen.controlButton("Quotation/Order"),
+            ProductScreen.selectFirstOrder(),
+            ProductScreen.clickPayButton(),
+            PaymentScreen.clickPaymentMethod('Bank'),
+            PaymentScreen.clickValidate(),
+            ReceiptScreen.clickNextOrder(),
+            ProductScreen.controlButton("Quotation/Order"),
+            ProductScreen.checkOrdersListEmpty(),
+        ].flat(),
+    });
+
+registry
+    .category("web_tour.tours")
+    .add('PosSettleCustomPrice', {
+        test: true,
+        url: '/pos/ui',
+        steps: () => [
+            Dialog.confirm("Open session"),
+            ProductScreen.controlButton("Quotation/Order"),
+            ProductScreen.selectFirstOrder(),
+            ProductScreen.selectedOrderlineHas('product_a', '1', '100'),
+            ProductScreen.clickPartnerButton(),
+            ProductScreen.clickCustomer("Test Partner AAA"),
+            ProductScreen.selectedOrderlineHas('product_a', '1', '100'),
+        ].flat(),
+    });
+
+registry
+    .category("web_tour.tours")
+    .add("PosSettleDraftOrder", {
+        test: true,
+        url: "/pos/ui",
+        steps: () => [
+            Dialog.confirm("Open session"),
+            ProductScreen.controlButton("Quotation/Order"),
+            ProductScreen.selectFirstOrder(),
+            ProductScreen.selectedOrderlineHas('Test service product', '1.00', '50.00'),
+        ].flat(),
+    });
+
+registry.category("web_tour.tours").add("PoSDownPaymentLinesPerTax", {
+    test: true,
+    steps: () =>
+        [
+            Dialog.confirm("Open session"),
+            ProductScreen.controlButton("Quotation/Order"),
+            ProductScreen.downPayment20PercentFirstOrder(),
+            Order.hasLine({
+                productName: "Down Payment",
+                quantity: "1.0",
+                price: "2.20",
+            }),
+            Order.hasLine({
+                productName: "Down Payment",
+                quantity: "1.0",
+                price: "1.00",
+            }),
+            Order.hasLine({
+                productName: "Down Payment",
+                quantity: "1.0",
+                price: "3.00",
+            }),
+        ].flat(),
+});

@@ -5,17 +5,17 @@
 # Translators:
 # Yazi Tian, 2024
 # Jeffery CHEN <jeffery9@gmail.com>, 2024
-# Wil Odoo, 2024
 # 湘子 南 <1360857908@qq.com>, 2024
 # Chloe Wang, 2024
+# Wil Odoo, 2024
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server saas~17.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-02-07 10:22+0000\n"
+"POT-Creation-Date: 2024-08-19 07:26+0000\n"
 "PO-Revision-Date: 2024-01-17 11:21+0000\n"
-"Last-Translator: Chloe Wang, 2024\n"
+"Last-Translator: Wil Odoo, 2024\n"
 "Language-Team: Chinese (China) (https://app.transifex.com/odoo/teams/41243/zh_CN/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -470,6 +470,8 @@ msgid ""
 "<i class=\"fa fa-desktop me-xl-2 my-1\"/>\n"
 "                <span class=\"d-none d-xl-inline-block\">Fullscreen</span>"
 msgstr ""
+"<i class=\"fa fa-desktop me-xl-2 my-1\"/>\n"
+"                <span class=\"d-none d-xl-inline-block\">全屏</span>"
 
 #. module: website_slides
 #: model_terms:ir.ui.view,arch_db:website_slides.slide_social_email
@@ -646,6 +648,8 @@ msgid ""
 "<i class=\"fa fa-share-alt me-xl-2 my-1\"/>\n"
 "                <span class=\"d-none d-xl-inline-block\">Share</span>"
 msgstr ""
+"<i class=\"fa fa-share-alt me-xl-2 my-1\"/>\n"
+"                <span class=\"d-none d-xl-inline-block\">分享</span>"
 
 #. module: website_slides
 #: model_terms:ir.ui.view,arch_db:website_slides.embed_slide
@@ -1056,15 +1060,6 @@ msgstr "A 水果"
 #. module: website_slides
 #. odoo-javascript
 #: code:addons/website_slides/static/src/js/tours/slides_tour.js:0
-msgid ""
-"A good course has a structure. Pick a name for your first section and click "
-"<b>Save</b> to create it."
-msgstr "一个好的课程有一个结构。为您的第一部分选一个名字，然后点击<b>\"保存</b>\"来创建它。"
-
-#. module: website_slides
-#. odoo-javascript
-#: code:addons/website_slides/static/src/js/tours/slides_tour.js:0
-#, python-format
 msgid ""
 "A good course has a structure. Pick a name for your first <b>Section</b>."
 msgstr "好的课程是有结构的。请为第一个<b>章节</b>命名。"
@@ -1517,7 +1512,7 @@ msgstr "您确定要删除此类别吗？"
 #. odoo-javascript
 #: code:addons/website_slides/static/src/js/slides_course_quiz.js:0
 msgid "Are you sure you want to delete this question \"<strong>%s</strong>\"?"
-msgstr ""
+msgstr "确定删除此问题？（<strong>%s</strong>）"
 
 #. module: website_slides
 #. odoo-javascript
@@ -1873,7 +1868,6 @@ msgstr "清除筛选"
 #. module: website_slides
 #. odoo-javascript
 #: code:addons/website_slides/static/src/js/tours/slides_tour.js:0
-#, python-format
 msgid "Click <b>Save</b> to create it."
 msgstr "点击<b>储存</b>以创建它。"
 
@@ -1903,20 +1897,12 @@ msgstr "点击屏幕上方的 \"编辑 \"按钮，编辑幻灯片内容。"
 #. module: website_slides
 #. odoo-javascript
 #: code:addons/website_slides/static/src/js/tours/slides_tour.js:0
-msgid "Click on the <b>Create</b> button to create your first course."
-msgstr "点击 \"<b>创建</b>\"按钮，创建您的第一个课程。"
-
-#. module: website_slides
-#. odoo-javascript
-#: code:addons/website_slides/static/src/js/tours/slides_tour.js:0
-#, python-format
 msgid "Click on the <b>Save</b> button to create your first course."
 msgstr "点击<b>保存</b>按钮，创建您的第一个课程。"
 
 #. module: website_slides
 #. odoo-javascript
 #: code:addons/website_slides/static/src/js/tours/slides_tour.js:0
-#, python-format
 msgid "Click on your <b>Course</b> to go back to the table of content."
 msgstr "点击您的<b>课程</b>，返回到内容表。"
 
@@ -2455,13 +2441,13 @@ msgstr "为您的在线学习创建新的内容"
 #. odoo-javascript
 #: code:addons/website_slides/static/src/js/public/components/course_tag_add_dialog/course_tag_add_dialog.xml:0
 msgid "Create this tag \""
-msgstr ""
+msgstr "创建此标签"
 
 #. module: website_slides
 #. odoo-javascript
 #: code:addons/website_slides/static/src/js/public/components/course_tag_add_dialog/course_tag_add_dialog.xml:0
 msgid "Create this tag group\""
-msgstr ""
+msgstr "创建此标签组"
 
 #. module: website_slides
 #: model:ir.model.fields,field_description:website_slides.field_slide_answer__create_uid
@@ -3202,6 +3188,7 @@ msgstr "谷歌文档密钥"
 
 #. module: website_slides
 #. odoo-python
+#: code:addons/website_slides/models/slide_slide.py:0
 #: code:addons/website_slides/models/slide_slide.py:0
 #: model:ir.model.fields.selection,name:website_slides.selection__slide_slide__video_source_type__google_drive
 msgid "Google Drive"
@@ -4480,6 +4467,12 @@ msgid "Ongoing Courses"
 msgstr "进行中的课程"
 
 #. module: website_slides
+#. odoo-python
+#: code:addons/website_slides/controllers/mail.py:0
+msgid "Only a single review can be posted per course."
+msgstr "每门课程只能发布一个评论."
+
+#. module: website_slides
 #: model:ir.model.fields.selection,name:website_slides.selection__slide_channel__enroll__public
 msgid "Open"
 msgstr "打开"
@@ -4490,12 +4483,6 @@ msgstr "打开"
 #: code:addons/website_slides/models/slide_channel.py:0
 msgid "Operation not supported"
 msgstr "不支持操作"
-
-#. module: website_slides
-#: code:addons/website_slides/controllers/mail.py:0
-#, python-format
-msgid "Only a single review can be posted per course."
-msgstr "每门课程只能发布一个评论."
 
 #. module: website_slides
 #: model:ir.model.fields,help:website_slides.field_slide_channel_invite__lang
@@ -5162,13 +5149,13 @@ msgstr "手动选择"
 #. odoo-javascript
 #: code:addons/website_slides/static/src/js/public/components/course_tag_add_dialog/course_tag_add_dialog.js:0
 msgid "Select or create a tag"
-msgstr ""
+msgstr "选择或创建标签"
 
 #. module: website_slides
 #. odoo-javascript
 #: code:addons/website_slides/static/src/js/public/components/course_tag_add_dialog/course_tag_add_dialog.js:0
 msgid "Select or create a tag group"
-msgstr ""
+msgstr "选择或创建标签组"
 
 #. module: website_slides
 #. odoo-javascript
@@ -6141,6 +6128,11 @@ msgid "Use Course Groups to classify and organize your Courses."
 msgstr "使用课程小组对课程进行分类和组织。"
 
 #. module: website_slides
+#: model_terms:ir.ui.view,arch_db:website_slides.slide_channel_invite_view_form
+msgid "Use template"
+msgstr "使用模板"
+
+#. module: website_slides
 #: model:ir.model.fields,help:website_slides.field_slide_channel__tag_ids
 msgid "Used to categorize and filter displayed channels/courses"
 msgstr "用于分类和过滤显示的频道/课程"
@@ -6230,6 +6222,7 @@ msgstr "视图 •"
 
 #. module: website_slides
 #. odoo-python
+#: code:addons/website_slides/models/slide_slide.py:0
 #: code:addons/website_slides/models/slide_slide.py:0
 #: model:ir.model.fields.selection,name:website_slides.selection__slide_slide__video_source_type__vimeo
 msgid "Vimeo"
@@ -6828,6 +6821,12 @@ msgstr "例如：“介绍”"
 #: code:addons/website_slides/static/src/xml/slide_quiz_create.xml:0
 msgid "e.g. \"Which animal cannot fly?\""
 msgstr "例如：“什么动物不能飞行？”"
+
+#. module: website_slides
+#. odoo-javascript
+#: code:addons/website_slides/static/src/xml/slide_quiz_create.xml:0
+msgid "e.g. \"{{placeholder || \"another animal\"}}\""
+msgstr "例：\"{{placeholder || \"another animal\"}}\""
 
 #. module: website_slides
 #: model_terms:ir.ui.view,arch_db:website_slides.slide_channel_view_form_add

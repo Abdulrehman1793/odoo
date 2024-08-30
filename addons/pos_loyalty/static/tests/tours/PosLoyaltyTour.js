@@ -231,7 +231,7 @@ registry.category("web_tour.tours").add("PosLoyaltyTour6", {
             PosLoyalty.checkAddedLoyaltyPoints("26.5"),
             ProductScreen.controlButton("Reward"),
             SelectionPopup.has("$ 1 per point on your order", { run: "click" }),
-            ProductScreen.totalAmountIs("138.50"),
+            ProductScreen.totalAmountIs("165.00"),
         ].flat(),
 });
 
@@ -354,12 +354,6 @@ registry.category("web_tour.tours").add('PosLoyaltyTour11.2', {
             PosLoyalty.enterCode('123456'),
             PosLoyalty.isRewardButtonHighlighted(true),
             PosLoyalty.claimReward('Free Product'),
-            PosLoyalty.hasRewardLine('Free Product', '-1.00'),
-            PosLoyalty.isRewardButtonHighlighted(true),
-            PosLoyalty.claimReward('Free Product'),
-            PosLoyalty.hasRewardLine('Free Product', '-2.00'),
-            PosLoyalty.isRewardButtonHighlighted(true),
-            PosLoyalty.claimReward('Free Product'),
             PosLoyalty.hasRewardLine('Free Product', '-3.00'),
             PosLoyalty.isRewardButtonHighlighted(false),
             ProductScreen.totalAmountIs('50.00'),
@@ -450,9 +444,9 @@ registry.category("web_tour.tours").add("PosLoyaltyPointsGlobalDiscountProgramNo
     steps: () =>
         [
             Dialog.confirm("Open session"),
+            ProductScreen.addOrderline("product_a", "1"),
             ProductScreen.clickPartnerButton(),
             ProductScreen.clickCustomer("AAAA"),
-            ProductScreen.addOrderline("product_a", "1"),
             PosLoyalty.hasRewardLine("10% on your order", "-10.00"),
             PosLoyalty.orderTotalIs("90"),
             PosLoyalty.pointsAwardedAre("90"),
@@ -470,10 +464,41 @@ registry.category("web_tour.tours").add('ChangeRewardValueWithLanguage', {
             ProductScreen.clickDisplayedProduct('Desk Organizer'),
             ProductScreen.selectedOrderlineHas('Desk Organizer', '1.00', '5.10'),
             ProductScreen.clickPartnerButton(),
-            ProductScreen.clickCustomer('Colleen Diaz'),
+            ProductScreen.clickCustomer('Partner Test 1'),
             PosLoyalty.isRewardButtonHighlighted(true),
             PosLoyalty.claimReward('$ 2 on your order'),
             PosLoyalty.hasRewardLine('$ 2 on your order', '-2.00'),
             PosLoyalty.orderTotalIs('3.10'),
+        ].flat(),
+});
+
+registry.category("web_tour.tours").add("PosLoyaltyArchivedRewardProductsInactive", {
+    test: true,
+    url: "/pos/web",
+    steps: () =>
+        [
+            Dialog.confirm("Open session"),
+
+            ProductScreen.clickDisplayedProduct("Test Product A"),
+            ProductScreen.clickPartnerButton(),
+            ProductScreen.clickCustomer("AAAA"),
+
+            PosLoyalty.isRewardButtonHighlighted(false),
+            ProductScreen.selectedOrderlineHas('Test Product A', '1.00', '100.00'),
+            PosLoyalty.finalizeOrder("Cash", "100"),
+        ].flat(),
+});
+
+registry.category("web_tour.tours").add("PosLoyaltyArchivedRewardProductsActive", {
+    test: true,
+    url: "/pos/web",
+    steps: () =>
+        [
+            ProductScreen.clickDisplayedProduct("Test Product A"),
+            ProductScreen.clickPartnerButton(),
+            ProductScreen.clickCustomer("AAAA"),
+            PosLoyalty.isRewardButtonHighlighted(true),
+            ProductScreen.selectedOrderlineHas('Test Product A', '1.00', '100.00'),
+            PosLoyalty.finalizeOrder("Cash", "100"),
         ].flat(),
 });

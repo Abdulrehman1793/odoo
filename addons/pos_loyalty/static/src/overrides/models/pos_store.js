@@ -102,7 +102,7 @@ patch(PosStore.prototype, {
             }
             const couponRules = nomenclatureRules.filter((rule) => rule.type === "coupon");
             const isValidCoupon = couponRules.some((rule) => {
-                let patterns = rule.pattern.split("|");
+                const patterns = rule.pattern.split("|");
                 return patterns.some((pattern) => trimmedCode.startsWith(pattern));
             });
             if (isValidCoupon) {
@@ -182,7 +182,7 @@ patch(PosStore.prototype, {
             const points = order._getRealCouponPoints(couponProgram.coupon_id);
             const hasLine = order.orderlines.filter((line) => !line.is_reward_line).length > 0;
             for (const reward of program.reward_ids.filter(
-                (reward) => reward.reward_type == "product"
+                (reward) => reward.reward_type == "product" && reward.reward_product_ids.length > 0
             )) {
                 if (points < reward.required_points) {
                     continue;
@@ -259,7 +259,7 @@ patch(PosStore.prototype, {
                 }
             }
         } catch (error) {
-            if (!(error instanceof InvalidDomainError)) {
+            if (!(error instanceof InvalidDomainError || error instanceof TypeError)) {
                 throw error;
             }
             const index = this.models["loyalty.reward"].indexOf(reward);
@@ -288,7 +288,7 @@ patch(PosStore.prototype, {
         // When an order is selected, it doesn't always contain the reward lines.
         // And the list of active programs are not always correct. This is because
         // of the use of DropPrevious in _updateRewards.
-        if (order) {
+        if (order && !order.finalized) {
             order._updateRewards();
         }
         return result;

@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server saas~17.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-01-17 10:10+0000\n"
+"POT-Creation-Date: 2024-08-19 07:27+0000\n"
 "PO-Revision-Date: 2024-01-17 11:21+0000\n"
 "Last-Translator: Larissa Manderfeld, 2024\n"
 "Language-Team: Spanish (https://app.transifex.com/odoo/teams/41243/es/)\n"
@@ -140,7 +140,7 @@ msgstr "En otro - Conectado/a"
 #. module: hr_homeworking
 #: model:ir.model,name:hr_homeworking.model_hr_employee_base
 msgid "Basic Employee"
-msgstr "Empleado Básico"
+msgstr "Empleado básico"
 
 #. module: hr_homeworking
 #. odoo-javascript
@@ -239,7 +239,7 @@ msgstr "Viernes"
 #: model:ir.model.fields,field_description:hr_homeworking.field_hr_employee_base__hr_icon_display
 #: model:ir.model.fields,field_description:hr_homeworking.field_hr_employee_public__hr_icon_display
 msgid "Hr Icon Display"
-msgstr "Visualización del icono RRHH"
+msgstr "Visualización del icono RR. HH."
 
 #. module: hr_homeworking
 #: model:ir.model.fields,field_description:hr_homeworking.field_homework_location_wizard__id
@@ -327,7 +327,7 @@ msgstr "Trabajo remoto"
 #. module: hr_homeworking
 #: model_terms:ir.ui.view,arch_db:hr_homeworking.homework_location_wizard_view_form
 msgid "Repeat every"
-msgstr "Repite cada"
+msgstr "Repetir cada"
 
 #. module: hr_homeworking
 #: model:ir.model.fields,field_description:hr_homeworking.field_hr_employee__saturday_location_id
@@ -404,6 +404,13 @@ msgid "User"
 msgstr "Usuario"
 
 #. module: hr_homeworking
+#. odoo-javascript
+#: code:addons/hr_homeworking/static/src/im_status_patch.xml:0
+#: code:addons/hr_homeworking/static/src/im_status_patch.xml:0
+msgid "User work at {{location}} and is {{status}}"
+msgstr "El usuario trabaja en {{location}} y su estado es {{status}}"
+
+#. module: hr_homeworking
 #: model:ir.model.fields,field_description:hr_homeworking.field_hr_employee__wednesday_location_id
 #: model:ir.model.fields,field_description:hr_homeworking.field_hr_employee_base__wednesday_location_id
 #: model:ir.model.fields,field_description:hr_homeworking.field_hr_employee_public__wednesday_location_id
@@ -432,3 +439,10 @@ msgstr "Ubicación de trabajo"
 #: code:addons/hr_homeworking/models/hr_work_location.py:0
 msgid "You cannot delete locations that are being used by your employees"
 msgstr "No puede eliminar las ubicaciones que utilizan sus empleados."
+
+#. module: hr_homeworking
+#. odoo-javascript
+#: code:addons/hr_homeworking/static/src/im_status_patch.xml:0
+#: code:addons/hr_homeworking/static/src/im_status_patch.xml:0
+msgid "{{status}}"
+msgstr "{{status}}"

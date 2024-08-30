@@ -5,6 +5,7 @@ import { AND, Record } from "@mail/core/common/record";
 
 import { deserializeDateTime } from "@web/core/l10n/dates";
 import { _t } from "@web/core/l10n/translation";
+import { pyToJsLocale } from "@web/core/l10n/utils";
 import { user } from "@web/core/user";
 import { Deferred } from "@web/core/utils/concurrency";
 
@@ -54,6 +55,10 @@ export class Thread extends Record {
     }
     static async getOrFetch(data) {
         return this.get(data);
+    }
+
+    static get onlineMemberStatuses() {
+        return ["away", "bot", "online"];
     }
 
     /** @type {number} */
@@ -362,7 +367,7 @@ export class Thread extends Record {
             return this.custom_channel_name || this.correspondent.nameOrDisplayName;
         }
         if (this.type === "group" && !this.name) {
-            const listFormatter = new Intl.ListFormat(user.lang?.replace("_", "-"), {
+            const listFormatter = new Intl.ListFormat(user.lang && pyToJsLocale(user.lang), {
                 type: "conjunction",
                 style: "long",
             });
@@ -481,7 +486,10 @@ export class Thread extends Record {
     offlineMembers = Record.many("ChannelMember", {
         /** @this {import("models").Thread} */
         compute() {
-            return this.channelMembers.filter((member) => member.persona?.im_status !== "online");
+            return this.channelMembers.filter(
+                (member) =>
+                    !this._store.Thread.onlineMemberStatuses.includes(member.persona?.im_status)
+            );
         },
         sort: (m1, m2) => (m1.persona?.name < m2.persona?.name ? -1 : 1),
     });
@@ -524,7 +532,9 @@ export class Thread extends Record {
     onlineMembers = Record.many("ChannelMember", {
         /** @this {import("models").Thread} */
         compute() {
-            return this.channelMembers.filter((member) => member.persona.im_status === "online");
+            return this.channelMembers.filter((member) =>
+                this._store.Thread.onlineMemberStatuses.includes(member.persona.im_status)
+            );
         },
         sort: (m1, m2) => {
             const m1HasRtc = Boolean(m1.rtcSession);

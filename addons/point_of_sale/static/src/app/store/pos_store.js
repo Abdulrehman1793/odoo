@@ -306,8 +306,8 @@ export class PosStore extends Reactive {
 
         for (const item of pricelistItems) {
             if (
-                (item.date_start && deserializeDate(item.date_start) > date) ||
-                (item.date_end && deserializeDate(item.date_end) < date)
+                (item.date_start && deserializeDate(item.date_start, {zone: "utc"}) > date) ||
+                (item.date_end && deserializeDate(item.date_end, {zone: "utc"}) < date)
             ) {
                 continue;
             }
@@ -388,8 +388,7 @@ export class PosStore extends Reactive {
         window.addEventListener("beforeunload", () =>
             this.db.save("TO_REFUND_LINES", this.toRefundLines)
         );
-        const { start_category, iface_start_categ_id } = this.config;
-        this.selectedCategoryId = (start_category && iface_start_categ_id?.[0]) || 0;
+        this.resetProductScreenSearch();
         // Push orders in background, do not await
         this.push_orders();
         // This method is to load the demo datas.
@@ -480,6 +479,7 @@ export class PosStore extends Reactive {
         let quantity = 1;
         let comboConfigurator = [];
         let attribute_custom_values = {};
+        let extras = {};
 
         if (code && product_packaging_by_barcode[code.code]) {
             quantity = product_packaging_by_barcode[code.code].qty;
@@ -509,6 +509,7 @@ export class PosStore extends Reactive {
             }
 
             comboConfigurator = payload;
+            extras.price_type = "manual";
         }
         // Gather lot information if required.
         if (product.isTracked()) {
@@ -562,6 +563,7 @@ export class PosStore extends Reactive {
             price_extra,
             comboConfigurator,
             attribute_value_ids,
+            extras,
         };
     }
 
@@ -1129,7 +1131,7 @@ export class PosStore extends Reactive {
             const mapped_included_taxes = [];
             let new_included_taxes = [];
             taxes.forEach((tax) => {
-                const line_taxes = this.get_taxes_after_fp([tax.id], order.fiscal_position);
+                const line_taxes = this.get_taxes_after_fp([tax], order.fiscal_position);
                 if (line_taxes.length && line_taxes[0].price_include) {
                     new_included_taxes = new_included_taxes.concat(line_taxes);
                 }
@@ -1140,21 +1142,8 @@ export class PosStore extends Reactive {
 
             if (mapped_included_taxes.length > 0) {
                 if (new_included_taxes.length > 0) {
-                    const price_without_taxes = this.compute_all(
-                        mapped_included_taxes,
-                        price,
-                        1,
-                        this.currency.rounding,
-                        true
-                    ).total_excluded;
-                    price = this.compute_all(
-                        new_included_taxes,
-                        price_without_taxes,
-                        1,
-                        this.currency.rounding,
-                        false
-                    ).total_included;
-                } else {
+                    return { price: price };
+                } if (new_included_taxes.length >= 0) {
                     price = this.compute_all(
                         mapped_included_taxes,
                         price,
@@ -1717,6 +1706,28 @@ export class PosStore extends Reactive {
     }
 
     /**
+     * This method will return a new price so that if you apply the taxes the price will remain the same
+     * For example if the original price is 50. It will compute a new price so that if you apply the tax_ids
+     * the price would still be 50.
+     */
+    compute_price_force_price_include(tax_ids, price) {
+        const AccountTax = this.models["account.tax"];
+        const taxes_to_apply = tax_ids.map((tax) => {
+            const duplicatedObject = AccountTax.duplicate(AccountTax.get(tax));
+            duplicatedObject.original_price_include = duplicatedObject.price_include;
+            duplicatedObject.price_include = true;
+            return duplicatedObject;
+        });
+        const tax_res = this.compute_all(taxes_to_apply, price, 1, this.currency.rounding);
+        let new_price = tax_res["total_excluded"];
+        new_price += tax_res.taxes
+            .filter((tax) => AccountTax.get(tax.id).original_price_include)
+            .reduce((sum, tax) => (sum += tax.amount), 0);
+        AccountTax.deleteMany(taxes_to_apply);
+        return new_price;
+    }
+
+    /**
      * Taxes after fiscal position mapping.
      * @param {number[]} taxIds
      * @param {object | falsy} fpos - fiscal position
@@ -1964,7 +1975,7 @@ export class PosStore extends Reactive {
         }
         this.get_order() || this.add_new_order();
 
-        options = { ...options, ...(await this.getAddProductOptions(product)) };
+        options = { ...(await this.getAddProductOptions(product)), ...options };
 
         if (!Object.keys(options).length) {
             return;
@@ -2087,6 +2098,12 @@ export class PosStore extends Reactive {
 
     redirectToBackend() {
         window.location = "/web#action=point_of_sale.action_client_pos_menu";
+    }
+
+    resetProductScreenSearch() {
+        this.searchProductWord = "";
+        const { start_category, iface_start_categ_id } = this.config;
+        this.selectedCategoryId = (start_category && iface_start_categ_id?.[0]) || 0;
     }
 }
 

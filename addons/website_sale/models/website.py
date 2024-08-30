@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from odoo import _, _lt, SUPERUSER_ID, api, fields, models, tools
+from odoo import SUPERUSER_ID, _, _lt, api, fields, models, tools
 from odoo.http import request
 from odoo.osv import expression
 

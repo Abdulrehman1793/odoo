@@ -178,13 +178,12 @@ export class Base {
 
 export function createRelatedModels(modelDefs, modelClasses = {}, indexes = {}) {
     const [inverseMap, processedModelDefs] = processModelDefs(modelDefs);
-    const records = reactive(mapObj(processedModelDefs, () => reactive({})));
-    const orderedRecords = reactive(mapObj(processedModelDefs, () => reactive([])));
+    const records = reactive(mapObj(processedModelDefs, () => reactive(new Map())));
     const callbacks = mapObj(processedModelDefs, () => []);
     const baseData = {};
     const missingFields = {};
+    const orderedArrayCaches = {};
 
-    // object: model -> key -> keyval -> record
     const indexedRecords = reactive(
         mapObj(processedModelDefs, (model) => {
             const container = reactive({});
@@ -231,12 +230,12 @@ export function createRelatedModels(modelDefs, modelClasses = {}, indexes = {}) 
 
         if (typeof ownerRecord !== "object") {
             const model = field.model;
-            ownerRecord = records[model][ownerRecord];
+            ownerRecord = records[model].get(ownerRecord);
         }
 
         if (typeof recordToConnect !== "object") {
             const model = field.relation;
-            recordToConnect = records[model][recordToConnect];
+            recordToConnect = records[model].get(recordToConnect);
         }
 
         if (field.type === "many2one") {
@@ -286,20 +285,21 @@ export function createRelatedModels(modelDefs, modelClasses = {}, indexes = {}) 
     }
 
     function exists(model, id) {
-        return id in records[model];
+        return records[model].has(id);
     }
 
     function create(model, vals, ignoreRelations = false, fromSerialized = false) {
-        if (!("id" in vals)) {
+        if (!("id" in vals) || vals["id"] === undefined) {
             vals["id"] = uuid(model);
         }
 
+        delete orderedArrayCaches[model];
         const Model = modelClasses[model] || Base;
         const record = reactive(new Model({ models, records, model: models[model] }));
         const id = vals["id"];
         record.id = id;
         record._raw = baseData[model][id];
-        records[model][id] = record;
+        records[model].set(record.id, record);
 
         const indexRecord = (key, keyVal, many) => {
             if (!(typeof keyVal === "string" || typeof keyVal === "number")) {
@@ -308,10 +308,10 @@ export function createRelatedModels(modelDefs, modelClasses = {}, indexes = {}) 
 
             if (many) {
                 if (!indexedRecords[model][key][keyVal]) {
-                    indexedRecords[model][key][keyVal] = [];
+                    indexedRecords[model][key][keyVal] = new Map();
                 }
 
-                indexedRecords[model][key][keyVal].push(record);
+                indexedRecords[model][key][keyVal].set(record.id, record);
             } else {
                 indexedRecords[model][key][keyVal] = record;
             }
@@ -363,7 +363,7 @@ export function createRelatedModels(modelDefs, modelClasses = {}, indexes = {}) 
                         const ids = vals[name];
                         for (const id of ids) {
                             if (exists(comodelName, id)) {
-                                connect(field, record, records[comodelName][id]);
+                                connect(field, record, records[comodelName].get(id));
                             }
                         }
                     } else {
@@ -387,7 +387,7 @@ export function createRelatedModels(modelDefs, modelClasses = {}, indexes = {}) 
                     const val = vals[name];
                     if (fromSerialized) {
                         if (exists(comodelName, val)) {
-                            connect(field, record, records[comodelName][val]);
+                            connect(field, record, records[comodelName].get(val));
                         }
                     } else {
                         if (val instanceof Base) {
@@ -469,6 +469,8 @@ export function createRelatedModels(modelDefs, modelClasses = {}, indexes = {}) 
     }
 
     function delete_(model, record) {
+        delete orderedArrayCaches[model];
+
         const id = record.id;
         const fields = getFields(model);
         for (const name in fields) {
@@ -482,20 +484,18 @@ export function createRelatedModels(modelDefs, modelClasses = {}, indexes = {}) 
             }
         }
 
-        for (const [index, values] of Object.entries(indexedRecords[model])) {
-            for (const [idx, vals] of Object.entries(values)) {
-                if (Array.isArray(vals)) {
-                    indexedRecords[model][index] = vals.filter((val) => val.id !== record.id);
-                } else {
-                    delete indexedRecords[model][index][idx];
+        for (const key of indexes[model] || []) {
+            const keyVal = record.raw[key];
+            if (Array.isArray(keyVal)) {
+                for (const val of keyVal) {
+                    indexedRecords[model][key][val].delete(record.id);
                 }
+            } else {
+                delete indexedRecords[model][key][keyVal];
             }
         }
 
-        orderedRecords[model] = orderedRecords[model].filter((rec) => rec.id !== record.id);
-
-        delete records[model][id];
-
+        records[model].delete(id);
         models[model].triggerEvents("delete", id);
     }
 
@@ -508,7 +508,10 @@ export function createRelatedModels(modelDefs, modelClasses = {}, indexes = {}) 
                 return records;
             },
             get orderedRecords() {
-                return orderedRecords;
+                if (!orderedArrayCaches[model]) {
+                    orderedArrayCaches[model] = Array.from(records[model].values());
+                }
+                return orderedArrayCaches[model];
             },
             get indexedRecords() {
                 return indexedRecords;
@@ -552,34 +555,45 @@ export function createRelatedModels(modelDefs, modelClasses = {}, indexes = {}) 
                 if (!(model in this.records)) {
                     return;
                 }
-                return this.records[model][id];
+                return this.records[model].get(id);
             },
             readFirst() {
                 if (!(model in this.records)) {
                     return;
                 }
-                return this.orderedRecords[model][0];
+                return this.orderedRecords[0];
             },
             readBy(key, val) {
                 if (!indexes[model].includes(key)) {
                     throw new Error(`Unable to get record by '${key}'`);
                 }
-                return this.indexedRecords[model][key][val];
+                const result = this.indexedRecords[model][key][val];
+                if (result instanceof Map) {
+                    return Array.from(result.values());
+                }
+                return result;
             },
             readAll() {
-                return this.orderedRecords[model];
+                return this.orderedRecords;
             },
             readAllBy(key) {
                 if (!this.indexes[model].includes(key)) {
                     throw new Error(`Unable to get record by '${key}'`);
                 }
-                return this.indexedRecords[model][key];
+
+                if (!X2MANY_TYPES.has(fields[key].type)) {
+                    return this.indexedRecords[model][key];
+                } else {
+                    return mapObj(this.indexedRecords[model][key], (_, v) =>
+                        Array.from(v.values())
+                    );
+                }
             },
             readMany(ids) {
                 if (!(model in records)) {
                     return [];
                 }
-                return ids.map((id) => records[model][id]);
+                return ids.map((id) => records[model].get(id));
             },
             serialize(record) {
                 const result = {};
@@ -588,15 +602,23 @@ export function createRelatedModels(modelDefs, modelClasses = {}, indexes = {}) 
                     if (field.type === "many2one") {
                         result[name] = record[name] ? record[name].id : undefined;
                     } else if (X2MANY_TYPES.has(field.type)) {
-                        result[name] = [...record[name]].map((record) => record.id);
+                        result[name] = [...(record[name] || [])].map((record) => record.id);
                     } else {
                         result[name] = record[name];
                     }
                 }
                 return result;
             },
-            // aliases
-            getAllBy() {
+            duplicate(record) {
+                const serialized = this.serialize(record);
+                for (const key in serialized) {
+                    if (key.startsWith("__")) {
+                        delete serialized[key];
+                    }
+                }
+                return create(model, { ...serialized, id: undefined }, false, true);
+            },
+            getAllBy(key) {
                 return this.readAllBy(...arguments);
             },
             getAll() {
@@ -609,38 +631,38 @@ export function createRelatedModels(modelDefs, modelClasses = {}, indexes = {}) 
                 return this.read(...arguments);
             },
             getFirst() {
-                return this.readFirst(...arguments);
+                return this.readFirst();
             },
             // array prototype
             map(fn) {
-                return this.orderedRecords[model].map(fn);
+                return this.orderedRecords.map(fn);
             },
             flatMap(fn) {
-                return this.orderedRecords[model].flatMap(fn);
+                return this.orderedRecords.flatMap(fn);
             },
             forEach(fn) {
-                return this.orderedRecords[model].forEach(fn);
+                return this.orderedRecords.forEach(fn);
             },
             some(fn) {
-                return this.orderedRecords[model].some(fn);
+                return this.orderedRecords.some(fn);
             },
             every(fn) {
-                return this.orderedRecords[model].every(fn);
+                return this.orderedRecords.every(fn);
             },
             find(fn) {
-                return this.orderedRecords[model].find(fn);
+                return this.orderedRecords.find(fn);
             },
             filter(fn) {
-                return this.orderedRecords[model].filter(fn);
+                return this.orderedRecords.filter(fn);
             },
             sort(fn) {
-                return this.orderedRecords[model].sort(fn);
+                return this.orderedRecords.sort(fn);
             },
             indexOf(record) {
-                return this.orderedRecords[model].indexOf(record);
+                return this.orderedRecords.indexOf(record);
             },
             get length() {
-                return Object.keys(this.records[model]).length;
+                return this.records[model].size;
             },
             // External callbacks
             addEventListener(event, callback) {
@@ -679,6 +701,10 @@ export function createRelatedModels(modelDefs, modelClasses = {}, indexes = {}) 
     function loadData(rawData, load = []) {
         const results = {};
         const missingRecords = {};
+        const eventToTrigger = mapObj(processedModelDefs, () => ({
+            updated: new Map(),
+            created: new Map(),
+        }));
 
         for (const model in rawData) {
             if (!load.includes(model) && load.length !== 0) {
@@ -694,7 +720,14 @@ export function createRelatedModels(modelDefs, modelClasses = {}, indexes = {}) 
                 }
 
                 baseData[model][record.id] = record;
+
+                const toUpdate = records[model].get(record.id);
                 const result = create(model, record, true);
+                if (toUpdate) {
+                    eventToTrigger[model].updated.set(result.id, result);
+                } else {
+                    eventToTrigger[model].created.set(result.id, result);
+                }
 
                 if (!(model in results)) {
                     results[model] = [];
@@ -715,7 +748,7 @@ export function createRelatedModels(modelDefs, modelClasses = {}, indexes = {}) 
             const rawRecords = rawData[model];
             const fields = getFields(model);
             for (const rawRec of rawRecords) {
-                const recorded = records[model][rawRec.id];
+                const recorded = records[model].get(rawRec.id);
                 // Check if there are any missing fields for this record
                 const key = `${model}_${rawRec.id}`;
                 if (missingFields[key]) {
@@ -732,7 +765,7 @@ export function createRelatedModels(modelDefs, modelClasses = {}, indexes = {}) 
                         if (name in rawRec) {
                             for (const id of rawRec[name]) {
                                 if (field.relation in records) {
-                                    const toConnect = records[field.relation][id];
+                                    const toConnect = records[field.relation].get(id);
                                     if (toConnect) {
                                         connect(field, recorded, toConnect);
                                     } else if (
@@ -757,7 +790,7 @@ export function createRelatedModels(modelDefs, modelClasses = {}, indexes = {}) 
                     } else if (field.type === "many2one" && rawRec[name]) {
                         if (field.relation in records) {
                             const id = rawRec[name];
-                            const toConnect = records[field.relation][id];
+                            const toConnect = records[field.relation].get(id);
                             if (toConnect) {
                                 connect(field, recorded, toConnect);
                             } else if (
@@ -782,36 +815,15 @@ export function createRelatedModels(modelDefs, modelClasses = {}, indexes = {}) 
             }
         }
 
-        for (const [model, values] of Object.entries(results)) {
-            const valuesToAdd = [];
-            const valuesToUpdate = [];
-
-            if (!(model in orderedRecords)) {
-                continue;
+        for (const [model, values] of Object.entries(eventToTrigger)) {
+            const modelInst = models[model];
+            if (values.created.size !== 0) {
+                modelInst.triggerEvents("create", Array.from(values.created.values()));
             }
 
-            if (orderedRecords[model].length === 0) {
-                orderedRecords[model] = values;
-                valuesToAdd.push(...values);
-            } else {
-                for (const value of values) {
-                    const index = orderedRecords[model].findIndex((or) => or.id === value.id);
-
-                    if (index === -1) {
-                        valuesToAdd.push(value);
-                    } else {
-                        valuesToUpdate.push([index, value]);
-                    }
-                }
-
-                for (const [index, value] of valuesToUpdate) {
-                    orderedRecords[model][index] = value;
-                }
-                orderedRecords[model].unshift(...valuesToAdd);
+            if (values.updated.size !== 0) {
+                modelInst.triggerEvents("update", Array.from(values.updated.values()));
             }
-
-            const event = valuesToAdd.length > 0 ? "create" : "update";
-            models[model].triggerEvents(event, values);
         }
 
         return { results, missingRecords };

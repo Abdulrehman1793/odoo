@@ -159,6 +159,14 @@ describe('Editor', () => {
                 });
             });
         });
+        describe('sanitize should modify p within a', () => {
+            it('should unwrap p element inside editable a inside non editable div', async () => {
+                await testEditor(BasicEditor, {
+                    contentBefore: '<div contenteditable="false"><a href="" contenteditable="true"><p>abc</p></a></div>',
+                    contentAfter: '<div contenteditable="false"><a href="" contenteditable="true">abc</a></div>',
+                });
+            });
+        });
     });
     describe('deleteForward', () => {
         describe('Selection collapsed', () => {
@@ -5310,6 +5318,13 @@ X[]
                     contentAfter: '<table><tbody><tr style="height: 20px;"><td style="width: 20px;">ab</td><td>cd</td><td>ef[]</td></tr></tbody></table>',
                 });
             });
+            it('should move selection to the next cell', async () => {
+                await testEditor(BasicEditor, {
+                    contentBefore: '<ul><li><br><table><tbody><tr style="height: 20px;"><td style="width: 20px;">ab</td><td>[cd]</td><td>ef</td></tr></tbody></table><br></li></ul>',
+                    stepFunction: async editor => triggerEvent(editor.editable, 'keydown', { key: 'Tab'}),
+                    contentAfter: '<ul><li><br><table><tbody><tr style="height: 20px;"><td style="width: 20px;">ab</td><td>cd</td><td>ef[]</td></tr></tbody></table><br></li></ul>',
+                });
+            });
         });
         describe('rectangular selections', () => {
             describe('select a full table on cross over', () => {
@@ -6375,6 +6390,104 @@ X[]
                         </tr></tbody></table>
                         `,
                     });
+                });
+            });
+        });
+        describe('swapping rows', () => {
+            it('should maintain widths when moving first row down', async () => {
+                await testEditor(BasicEditor, {
+                    contentBefore: unformat(
+                        `<table id="table"><tbody>
+                            <tr>
+                                <td style="width: 200px;"><p>test</p></td>
+                                <td style="width: 50px;"><p><br></p></td>
+                                <td style="width: 50px;"><p><br></p></td>
+                            </tr>
+                            <tr>
+                                <td style="width: 100px;"><p><br></p></td>
+                                <td style="width: 100px;"><p><br></p></td>
+                                <td style="width: 100px;"><p><br></p></td>
+                            </tr>
+                            <tr>
+                                <td style="width: 100px;"><p><br></p></td>
+                                <td style="width: 100px;"><p><br></p></td>
+                                <td style="width: 100px;"><p><br></p></td>
+                            </tr>
+                        </tbody></table>
+                    `),
+                    stepFunction: async (editor) => {
+                        const cell = editor.editable.querySelector('td');
+                        await triggerEvent(cell, 'mousemove');
+                        const btn = editor.document.querySelector('.o_move_down');
+                        await btn.dispatchEvent(new Event("click"));
+                    },
+                    contentAfter: unformat(
+                        `<table id="table"><tbody>
+                            <tr>
+                                <td style="width: 200px;"><p><br></p></td>
+                                <td style="width: 50px;"><p><br></p></td>
+                                <td style="width: 50px;"><p><br></p></td>
+                            </tr>
+                            <tr>
+                                <td style="width: 200px;"><p>test</p></td>
+                                <td style="width: 50px;"><p><br></p></td>
+                                <td style="width: 50px;"><p><br></p></td>
+                            </tr>
+                            <tr>
+                                <td style="width: 100px;"><p><br></p></td>
+                                <td style="width: 100px;"><p><br></p></td>
+                                <td style="width: 100px;"><p><br></p></td>
+                            </tr>
+                        </tbody></table>
+                    `),
+                });
+            });
+            it('should maintain widths when moving second row up', async () => {
+                await testEditor(BasicEditor, {
+                    contentBefore: unformat(
+                        `<table id="table"><tbody>
+                            <tr>
+                                <td style="width: 200px;"><p>test</p></td>
+                                <td style="width: 50px;"><p><br></p></td>
+                                <td style="width: 50px;"><p><br></p></td>
+                            </tr>
+                            <tr>
+                                <td style="width: 100px;"><p><br></p></td>
+                                <td style="width: 100px;"><p><br></p></td>
+                                <td style="width: 100px;"><p><br></p></td>
+                            </tr>
+                            <tr>
+                                <td style="width: 100px;"><p><br></p></td>
+                                <td style="width: 100px;"><p><br></p></td>
+                                <td style="width: 100px;"><p><br></p></td>
+                            </tr>
+                        </tbody></table>
+                    `),
+                    stepFunction: async (editor) => {
+                        const cell=editor.editable.querySelector("tr:nth-child(2) td");
+                        await triggerEvent(cell, 'mousemove');
+                        const btn= editor.document.querySelector('.o_move_up');
+                        await btn.dispatchEvent(new Event("click"));
+                    },
+                    contentAfter: unformat(
+                        `<table id="table"><tbody>
+                            <tr>
+                                <td style="width: 200px;"><p><br></p></td>
+                                <td style="width: 50px;"><p><br></p></td>
+                                <td style="width: 50px;"><p><br></p></td>
+                            </tr>
+                            <tr>
+                                <td style="width: 200px;"><p>test</p></td>
+                                <td style="width: 50px;"><p><br></p></td>
+                                <td style="width: 50px;"><p><br></p></td>
+                            </tr>
+                            <tr>
+                                <td style="width: 100px;"><p><br></p></td>
+                                <td style="width: 100px;"><p><br></p></td>
+                                <td style="width: 100px;"><p><br></p></td>
+                            </tr>
+                        </tbody></table>
+                    `),
                 });
             });
         });

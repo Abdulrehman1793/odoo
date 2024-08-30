@@ -105,7 +105,7 @@ QUnit.module("spreadsheet > list plugin", {}, () => {
 
     QUnit.test("List formulas are correctly formatted at evaluation", async function (assert) {
         const { model } = await createSpreadsheetWithList({
-            columns: ["foo", "probability", "bar", "date", "create_date", "product_id", "pognon"],
+            columns: ["foo", "probability", "bar", "date", "create_date", "product_id", "pognon", "name"],
             linesNumber: 2,
         });
         await waitForDataSourcesLoaded(model);
@@ -117,6 +117,7 @@ QUnit.module("spreadsheet > list plugin", {}, () => {
         assert.strictEqual(getCell(model, "F2").format, undefined);
         assert.strictEqual(getCell(model, "G2").format, undefined);
         assert.strictEqual(getCell(model, "G3").format, undefined);
+        assert.strictEqual(getCell(model, "H2").format, undefined);
 
         assert.strictEqual(getEvaluatedCell(model, "A2").format, "0");
         assert.strictEqual(getEvaluatedCell(model, "B2").format, "#,##0.00");
@@ -126,6 +127,7 @@ QUnit.module("spreadsheet > list plugin", {}, () => {
         assert.strictEqual(getEvaluatedCell(model, "F2").format, undefined);
         assert.strictEqual(getEvaluatedCell(model, "G2").format, "#,##0.00[$€]");
         assert.strictEqual(getEvaluatedCell(model, "G3").format, "[$$]#,##0.00");
+        assert.strictEqual(getEvaluatedCell(model, "H2").format, "@");
     });
 
     QUnit.test("List formulas date formats are locale dependant", async function (assert) {
@@ -573,6 +575,45 @@ QUnit.module("spreadsheet > list plugin", {}, () => {
             assert.strictEqual(getEvaluatedCell(model, "A2").value, "EUR");
         }
     );
+
+    QUnit.test("Spec of web_search_read is minimal", async function (assert) {
+        const spreadsheetData = {
+            lists: {
+                1: {
+                    id: 1,
+                    columns: ["currency_id", "pognon", "foo"],
+                    model: "partner",
+                    orderBy: [],
+                },
+            },
+        };
+        const model = await createModelWithDataSource({
+            spreadsheetData,
+            mockRPC: function (route, args) {
+                if (args.method === "web_search_read") {
+                    assert.deepEqual(args.kwargs.specification, {
+                        pognon: {},
+                        currency_id: {
+                            fields: {
+                                name: {},
+                                symbol: {},
+                                decimal_places: {},
+                                display_name: {},
+                                position: {},
+                            },
+                        },
+                        foo: {},
+                    });
+                    assert.step("web_search_read");
+                }
+            },
+        });
+        setCellContent(model, "A1", '=ODOO.LIST(1, 1, "pognon")');
+        setCellContent(model, "A2", '=ODOO.LIST(1, 1, "currency_id")');
+        setCellContent(model, "A3", '=ODOO.LIST(1, 1, "foo")');
+        await waitForDataSourcesLoaded(model);
+        assert.verifySteps(["web_search_read"]);
+    });
 
     QUnit.test(
         "List record limit is computed during the import and UPDATE_CELL",

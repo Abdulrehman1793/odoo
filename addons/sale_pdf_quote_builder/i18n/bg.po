@@ -6,14 +6,15 @@
 # KeyVillage, 2024
 # Maria Boyadjieva <marabo2000@gmail.com>, 2024
 # Igor Sheludko <igor.sheludko@gmail.com>, 2024
+# Rumena Georgieva <rumena.georgieva@gmail.com>, 2024
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server saas~17.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-01-17 10:11+0000\n"
+"POT-Creation-Date: 2024-08-19 07:28+0000\n"
 "PO-Revision-Date: 2024-01-17 11:21+0000\n"
-"Last-Translator: Igor Sheludko <igor.sheludko@gmail.com>, 2024\n"
+"Last-Translator: Rumena Georgieva <rumena.georgieva@gmail.com>, 2024\n"
 "Language-Team: Bulgarian (https://app.transifex.com/odoo/teams/41243/bg/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -27,6 +28,8 @@ msgid ""
 "(object.state in ('draft', 'sent') and 'Quotation - %s' % (object.name)) or "
 "'Order - %s' % (object.name)"
 msgstr ""
+"(object.state in ('draft', 'sent') and 'Оферта- %s' % (object.name)) or "
+"'Поръчка- %s' % (object.name)"
 
 #. module: sale_pdf_quote_builder
 #: model_terms:ir.ui.view,arch_db:sale_pdf_quote_builder.res_config_settings_view_form
@@ -57,15 +60,6 @@ msgid "Config Settings"
 msgstr "Настройки"
 
 #. module: sale_pdf_quote_builder
-#. odoo-python
-#: code:addons/sale_pdf_quote_builder/utils.py:0
-#, python-format
-msgid ""
-"It seems that we're not able to process this pdf inside a quotation. It is "
-"either encrypted, or encoded in a format we do not support."
-msgstr ""
-
-#. module: sale_pdf_quote_builder
 #: model:ir.model.fields,field_description:sale_pdf_quote_builder.field_res_company__sale_footer
 #: model:ir.model.fields,field_description:sale_pdf_quote_builder.field_res_config_settings__sale_footer
 #: model:ir.model.fields,field_description:sale_pdf_quote_builder.field_sale_order_template__sale_footer
@@ -82,6 +76,14 @@ msgstr ""
 #. module: sale_pdf_quote_builder
 #: model:ir.model.fields.selection,name:sale_pdf_quote_builder.selection__product_document__attached_on__inside
 msgid "Inside quote"
+msgstr ""
+
+#. module: sale_pdf_quote_builder
+#. odoo-python
+#: code:addons/sale_pdf_quote_builder/utils.py:0
+msgid ""
+"It seems that we're not able to process this pdf inside a quotation. It is "
+"either encrypted, or encoded in a format we do not support."
 msgstr ""
 
 #. module: sale_pdf_quote_builder
@@ -103,13 +105,6 @@ msgid "Only PDF documents can be attached inside a quote."
 msgstr ""
 
 #. module: sale_pdf_quote_builder
-#. odoo-python
-#: code:addons/sale_pdf_quote_builder/models/product_document.py:0
-#, python-format
-msgid "When attached inside a quote, the document must be a file, not a URL."
-msgstr ""
-
-#. module: sale_pdf_quote_builder
 #: model_terms:ir.ui.view,arch_db:sale_pdf_quote_builder.sale_order_template_form
 msgid "PDF Quote Builder"
 msgstr ""
@@ -117,7 +112,7 @@ msgstr ""
 #. module: sale_pdf_quote_builder
 #: model_terms:ir.ui.view,arch_db:sale_pdf_quote_builder.res_config_settings_view_form
 msgid "PDF Quote builder"
-msgstr ""
+msgstr "PDF конструктор на оферти"
 
 #. module: sale_pdf_quote_builder
 #: model:ir.model,name:sale_pdf_quote_builder.model_product_document
@@ -189,4 +184,10 @@ msgstr ""
 #. module: sale_pdf_quote_builder
 #: model:ir.model.fields,field_description:sale_pdf_quote_builder.field_product_document__attached_on
 msgid "Visible at"
+msgstr ""
+
+#. module: sale_pdf_quote_builder
+#. odoo-python
+#: code:addons/sale_pdf_quote_builder/models/product_document.py:0
+msgid "When attached inside a quote, the document must be a file, not a URL."
 msgstr ""

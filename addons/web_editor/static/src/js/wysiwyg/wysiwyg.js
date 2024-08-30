@@ -179,6 +179,7 @@ export class Wysiwyg extends Component {
                 this.odooEditor.historyPauseSteps();
                 try {
                     this._processAndApplyColor(colorType, props.color, true);
+                    this.odooEditor._computeHistorySelection();
                 } finally {
                     this.odooEditor.historyUnpauseSteps();
                 }
@@ -499,6 +500,7 @@ export class Wysiwyg extends Component {
             showExtendedTextStylesOptions: options.showExtendedTextStylesOptions,
             getCSSVariableValue: options.getCSSVariableValue,
             convertNumericToUnit: options.convertNumericToUnit,
+            autoActivateContentEditable: this.options.autoActivateContentEditable,
         }, editorCollaborationOptions));
 
         this.odooEditor.addEventListener('contentChanged', function () {
@@ -1477,7 +1479,7 @@ export class Wysiwyg extends Component {
                 ...this.options.linkOptions,
                 editable: this.odooEditor.editable,
                 link,
-                needLabel: true,
+                needLabel: true && !link.querySelector('img'),
                 focusField: link.innerHTML ? 'url' : '',
                 onSave: (data) => {
                     if (!data) {
@@ -1758,7 +1760,7 @@ export class Wysiwyg extends Component {
             this.odooEditor.unbreakableStepUnactive();
             this.odooEditor.historyStep();
             // Refocus again to save updates when calling `_onWysiwygBlur`
-            params.node.ownerDocument.defaultView.focus();
+            this.odooEditor.editable.focus();
         } else {
             return this.odooEditor.execCommand('insert', element);
         }
@@ -2366,7 +2368,7 @@ export class Wysiwyg extends Component {
                 const bannerElement = parseHTML(this.odooEditor.document, `
                     <div class="o_editor_banner o_not_editable lh-1 d-flex align-items-center alert alert-${alertClass} pb-0 pt-3" role="status" data-oe-protected="true">
                         <i class="o_editor_banner_icon mb-3 fst-normal" aria-label="${_t(title)}">${emoji}</i>
-                        <div class="w-100 ms-3" data-oe-protected="false">
+                        <div class="w-100 px-3" data-oe-protected="false">
                             <p><br></p>
                         </div>
                     </div>

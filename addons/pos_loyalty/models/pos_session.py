@@ -33,7 +33,6 @@ class PosSession(models.Model):
                     'discount', 'discount_mode', 'discount_applicability', 'all_discount_product_ids', 'is_global_discount',
                     'discount_max_amount', 'discount_line_product_id',
                     'multi_product', 'reward_product_ids', 'reward_product_qty', 'reward_product_uom_id', 'reward_product_domain'],
-                'context': {**self.env.context},
             },
             'loyalty.card': {
                 'domain': lambda data: [('program_id', 'in', [program["id"] for program in data["loyalty.program"]])],
@@ -100,9 +99,10 @@ class PosSession(models.Model):
             products = self.env['product.product'].search_read([('id', 'in', products)], fields=product_params['fields'], load=False)
             self._process_pos_ui_product_product(products)
 
-            result['custom']['pos_special_products_ids'].extend(
-                [product.id for product in reward_products if product.id not in [p["id"] for p in result['data']['product.product']]]
-            )
+            if not only_data:
+                result['custom']['pos_special_products_ids'].extend(
+                    [product.id for product in reward_products if product.id not in [p["id"] for p in result['data']['product.product']]]
+                )
             result['data']['product.product'].extend(products)
 
         # adapt loyalty

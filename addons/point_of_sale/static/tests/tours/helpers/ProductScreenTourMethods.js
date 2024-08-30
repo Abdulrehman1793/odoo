@@ -409,7 +409,7 @@ export function addInternalNote(note) {
                 mobile: true,
             },
             controlButton("Internal Note"),
-            TextInputPopup.inputText(note),
+            ...( note ?  [TextInputPopup.inputText(note)] : []),
             Dialog.confirm(),
         ].flat()
     );
@@ -428,4 +428,13 @@ export function checkOrderlinesNumber(number) {
             },
         },
     ];
+}
+
+export function checkTaxAmount(number) {
+    return inLeftSide([
+        {
+            content: `check order tax amount`,
+            trigger: `.subentry:contains("${number}")`,
+        },
+    ]);
 }

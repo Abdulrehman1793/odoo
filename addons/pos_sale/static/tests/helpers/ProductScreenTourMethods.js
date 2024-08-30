@@ -50,3 +50,30 @@ export function checkCustomerNotes(note) {
             }
         ];
 }
+
+export function checkOrdersListEmpty() {
+    return [
+        {
+            content: 'Check that the orders list is empty',
+            trigger: 'body:not(:has(.order-row))',
+        }
+    ];
+}
+
+export function downPayment20PercentFirstOrder() {
+    return [
+        {
+            content: `select order`,
+            trigger: `.order-row .col.name:first`,
+        },
+        {
+            content: `click on select the order`,
+            trigger: `.selection-item:contains('Apply a down payment (percentage)')`,
+        },
+        {
+            content: `click on +10 button`,
+            trigger: `div.numpad.row button.col:contains("+20")`,
+        },
+        Dialog.confirm(),
+    ];
+}
